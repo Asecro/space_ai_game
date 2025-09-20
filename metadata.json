@@ -1,0 +1,5 @@
+{
+  "name": "Space Shooter",
+  "description": "A vibrant, fast-paced space shooting game built with React and TypeScript. Switch weapons, destroy enemies, and compete for the high score!",
+  "requestFramePermissions": []
+}

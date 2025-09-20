@@ -47,6 +47,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ setScore, onGameOver }) => {
   const bulletsRef = useRef<Bullet[]>([]);
   const enemiesRef = useRef<Enemy[]>([]);
   const particlesRef = useRef<Particle[]>([]);
+  const smokeParticlesRef = useRef<Particle[]>([]);
   const starsRef = useRef<Star[]>([]);
   const bonusItemsRef = useRef<BonusItem[]>([]);
   const scoreRef = useRef(0);
@@ -443,6 +444,35 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ setScore, onGameOver }) => {
         ctx.fillStyle = `rgba(${p.color.match(/\d+/g)?.join(',')}, ${scale})`;
         ctx.fill();
         ctx.shadowBlur = 0;
+    });
+
+    // ROCKET SMOKE TRAIL
+    if (Math.random() > 0.4) { // Spawn particles intermittently
+      const maxLife = 40;
+      smokeParticlesRef.current.push({
+        id: Math.random(),
+        x: player.x + player.width * 0.3 + Math.random() * player.width * 0.4,
+        y: player.y + player.height,
+        width: 0, height: 0,
+        color: '#ccc',
+        alpha: 1,
+        radius: Math.random() * 3 + 2,
+        life: maxLife, maxLife: maxLife,
+        velocity: { x: (Math.random() - 0.5) * 0.5, y: Math.random() * 1 + 1, z: 0 },
+      });
+    }
+
+    smokeParticlesRef.current = smokeParticlesRef.current.filter(p => p.life > 0);
+    smokeParticlesRef.current.forEach(p => {
+      p.x += p.velocity.x;
+      p.y += p.velocity.y;
+      p.life--;
+      const scale = p.life / p.maxLife;
+      p.radius += 0.1; // Smoke expands
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(200, 200, 200, ${scale * 0.5})`;
+      ctx.fill();
     });
 
     const p = player;

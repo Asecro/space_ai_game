@@ -4,18 +4,17 @@ import { HighScore } from '../types';
 interface GameOverScreenProps {
   score: number;
   highScores: HighScore[];
-  onSave: (name: string, score: number) => void;
+  onReturnToMenu: (name: string, score: number) => void;
 }
 
-const GameOverScreen: React.FC<GameOverScreenProps> = ({ score, highScores, onSave }) => {
+const GameOverScreen: React.FC<GameOverScreenProps> = ({ score, highScores, onReturnToMenu }) => {
   const [name, setName] = useState('');
 
   const isHighScore = score > 0 && (highScores.length < 10 || score > (highScores[highScores.length - 1]?.score ?? 0));
 
-  const handleSave = () => {
-    // If it's a high score and the name is blank, default to 'PILOT'
+  const handleReturn = () => {
     const finalName = isHighScore && !name.trim() ? 'PILOT' : name.trim();
-    onSave(finalName, score);
+    onReturnToMenu(finalName, score);
   };
 
   return (
@@ -38,10 +37,10 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({ score, highScores, onSa
       )}
 
       <button
-        onClick={handleSave}
+        onClick={handleReturn}
         className="px-8 py-4 text-2xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold rounded-lg transition-transform transform hover:scale-105 border-2 border-cyan-200"
       >
-        {isHighScore ? 'SAVE & PLAY AGAIN' : 'PLAY AGAIN'}
+        TOP画面に戻る
       </button>
 
       <div className="w-full max-w-sm mt-8">

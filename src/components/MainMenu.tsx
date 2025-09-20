@@ -9,8 +9,13 @@ interface MainMenuProps {
 const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, highScores }) => {
   return (
     <div className="w-[800px] h-[600px] bg-black bg-opacity-70 border-2 border-cyan-400 box-glow text-white flex flex-col items-center justify-center p-8 rounded-lg">
-      <h1 className="text-5xl font-bold mb-4 text-glow text-center leading-tight">Gemini AI &amp; KEITA<br/>space attack game</h1>
-      <p className="text-lg text-cyan-300 mb-8">ARROWS to move, SPACE to shoot, Q to change weapon, I for AI Pilot.</p>
+      <h1 className="text-6xl font-bold mb-4 text-center leading-tight rainbow-text-glow">GEMENI KEITA AI Space Atacck</h1>
+      <div className="text-lg text-cyan-300 mb-8">
+        <p>ARROWS to move</p>
+        <p>SPACE to shoot</p>
+        <p>Q to change weapon</p>
+        <p>I for AI Pilot</p>
+      </div>
       
       <button
         onClick={onStartGame}

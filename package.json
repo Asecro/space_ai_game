@@ -3,10 +3,11 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://<YOUR_GITHUB_USERNAME>/<YOUR_REPOSITORY_NAME>",
+  "homepage": "https://asecro.github.io/space_ai_game",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
+    "build-with-tsc": "tsc && vite build",
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"

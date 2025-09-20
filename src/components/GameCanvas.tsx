@@ -120,29 +120,47 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ setScore, onGameOver }) => {
       return closest;
     };
   
-    // --- DODGING LOGIC ---
-    let immediateThreat: Enemy | null = null;
-    let minThreatDistance = 150; // How close an enemy needs to be to be a threat
-  
+    // --- ENHANCED DODGING LOGIC ---
+    let bestDodgeDirection: 'left' | 'right' | null = null;
+    let highestThreatLevel = -1;
+    const safeZoneWidth = player.width * 1.5;
+
     for (const enemy of enemies) {
-      const willIntersect = Math.abs((player.x + player.width / 2) - (enemy.x + enemy.width / 2)) < (player.width / 2 + enemy.width / 2);
-      const isClose = enemy.y > player.y - minThreatDistance && enemy.y < player.y;
-  
-      if (willIntersect && isClose) {
-        immediateThreat = enemy;
-        break;
-      }
+        // Time (in frames/updates) for the enemy to reach the player's current y-level
+        const timeToReachPlayerY = (player.y - enemy.y) / enemy.speed;
+
+        // Consider enemies that are an imminent threat (e.g., will arrive in < 1.5 seconds at 60fps)
+        if (timeToReachPlayerY > 0 && timeToReachPlayerY < 90) { 
+            const predictedEnemyCenterX = enemy.x + enemy.width / 2;
+            const playerCenterX = player.x + player.width / 2;
+            const horizontalDistance = Math.abs(playerCenterX - predictedEnemyCenterX);
+
+            // Check if the enemy's path intersects with the player's safe zone
+            if (horizontalDistance < (safeZoneWidth / 2 + enemy.width / 2)) {
+                const threatLevel = 1 / timeToReachPlayerY; // Closer threats have higher levels
+                if (threatLevel > highestThreatLevel) {
+                    highestThreatLevel = threatLevel;
+                    // Dodge away from the predicted collision point.
+                    // If the enemy is to the left, dodge right, and vice-versa.
+                     if (predictedEnemyCenterX < playerCenterX) {
+                        bestDodgeDirection = 'right';
+                    } else {
+                        bestDodgeDirection = 'left';
+                    }
+                }
+            }
+        }
     }
   
-    if (immediateThreat) {
-      // Dodge!
-      if (immediateThreat.x + immediateThreat.width / 2 < player.x + player.width / 2) {
-        keys.ArrowRight = true; // Threat is to the left, move right
-      } else {
-        keys.ArrowLeft = true; // Threat is to the right, move left
-      }
+    if (bestDodgeDirection) {
+        // Execute the dodge
+        if (bestDodgeDirection === 'left') {
+            keys.ArrowLeft = true;
+        } else {
+            keys.ArrowRight = true;
+        }
     } else {
-      // --- TARGETING LOGIC ---
+      // --- TARGETING LOGIC (If no immediate need to dodge) ---
       const closestBonus = findClosest(player, bonusItems);
       const closestEnemy = findClosest(player, enemies);
       const target = closestBonus || closestEnemy; // Prioritize bonus items
@@ -259,16 +277,17 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ setScore, onGameOver }) => {
     bulletsRef.current.forEach(bullet => {
       if (bullet.type === 'missile') {
           if (!bullet.targetId || !enemiesRef.current.find(e => e.id === bullet.targetId)) {
-              let closestEnemy: Enemy | null = null;
-              let minDistance = Infinity;
+              let bestTarget: Enemy | null = null;
+              let maxThreat = -1;
               enemiesRef.current.forEach(enemy => {
-                  const distance = Math.hypot(bullet.x - enemy.x, bullet.y - enemy.y);
-                  if (distance < minDistance) {
-                      minDistance = distance;
-                      closestEnemy = enemy;
+                  // Threat is higher for enemies that are closer to the player (higher y) and larger.
+                  const threatScore = (enemy.y / CANVAS_HEIGHT) * enemy.width;
+                  if (threatScore > maxThreat) {
+                      maxThreat = threatScore;
+                      bestTarget = enemy;
                   }
               });
-              bullet.targetId = closestEnemy ? closestEnemy.id : null;
+              bullet.targetId = bestTarget ? bestTarget.id : null;
           }
           const target = enemiesRef.current.find(e => e.id === bullet.targetId);
           if (target) {
